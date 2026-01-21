@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar {
+  width: 200px;
+  transition: width 0.3s;
+}
+
+.sidebar.collapsed {
+  width: 60px;
+}
+
+.toggle-btn {
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+
+/* Mobile breakpoint */
+@media (max-width: 768px) {
+  .sidebar {
+    position: absolute;
+    left: -200px;
+    height: 100%;
+    z-index: 1000;
+  }
+  .sidebar.collapsed {
+    left: 0;
+  }
+  .toggle-btn {
+    display: block;
+  }
+  .main-content {
+    padding: 10px;
+  }
+}

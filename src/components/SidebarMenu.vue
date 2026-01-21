@@ -1,7 +1,9 @@
 <template>
   <div class="app-container">
     <!-- Sidebar -->
-    <aside :class="['sidebar', { collapsed: isCollapsed }]">
+    <button class="burger" @click="toggleSidebar">☰</button>
+
+    <aside class="sidebar" :class="{ open: isOpen }">
       <h2 class="sidebar-title">Menu</h2>
       <button class="toggle-btn" @click="isCollapsed = !isCollapsed">☰</button>
       <ul class="menu">
@@ -38,7 +40,7 @@ export default {
     return {
       options: ['Dashboard', 'Table', 'Settings', 'Messages', 'Logout'],
       selected: 'Dashboard', // default selection
-      isCollapsed: false,
+      isOpen: false,
     }
   },
   computed: {
@@ -59,6 +61,10 @@ export default {
   methods: {
     selectOption(option) {
       this.selected = option
+      this.isOpen = false // auto-close on mobile
+    },
+    toggleSidebar() {
+      this.isOpen = !this.isOpen
     },
   },
 }
@@ -76,7 +82,6 @@ export default {
   width: 200px;
   background-color: #3498db;
   color: white;
-  padding: 20px;
 }
 
 .sidebar-title {
@@ -110,5 +115,42 @@ export default {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
+}
+
+.burger {
+  display: none;
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: #3498db;
+  z-index: 1001;
+  cursor: pointer;
+}
+
+/* Mobile behavior */
+@media (max-width: 768px) {
+  .burger {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -220px;
+    height: 100vh;
+    transition: left 0.3s ease;
+    z-index: 1000;
+  }
+
+  .sidebar.open {
+    left: 0;
+  }
+
+  .main-content {
+    padding-top: 60px;
+  }
 }
 </style>

@@ -7,40 +7,42 @@
       <button @click="openModal('add')" title="Add Row">
         <img src="@/assets/add-icon.svg" alt="Add" class="icon" />
       </button>
-      <button @click="openDeleteModal" :disabled="!selectedRow" title="Delete Row">
-        <img src="@/assets/delete-icon.svg" alt="Delete" class="icon" />
-      </button>
       <button @click="openModal('edit')" :disabled="!selectedRow" title="Edit Row">
         <img src="@/assets/edit-icon.svg" alt="Edit" class="icon" />
       </button>
+      <button @click="openDeleteModal" :disabled="!selectedRow" title="Delete Row">
+        <img src="@/assets/delete-icon.svg" alt="Delete" class="icon" />
+      </button>
     </div>
 
-    <!-- Table -->
-    <table border="0" cellspacing="0" cellpadding="5" @click.stop>
-      <thead>
-        <tr>
-          <th v-for="header in headers" :key="header" @click="sortBy(header)" class="sortable">
-            {{ header }}
-            <span v-if="sortKey === header">{{ sortOrders[header] > 0 ? '▲' : '▼' }}</span>
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="(row, index) in sortedRows"
-          :key="row.id"
-          :class="{ selected: index === selectedIndex }"
-          @click="selectRow(index)"
-        >
-          <td>{{ row.Name }}</td>
-          <td>{{ row.Amount }}</td>
-          <td>{{ row.PaymentType }}</td>
-          <td>{{ formatDate(row.Date) }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <!-- Table Wrapper for horizontal scroll -->
+    <div class="table-wrapper">
+      <table>
+        <thead>
+          <tr>
+            <th v-for="header in headers" :key="header" @click="sortBy(header)" class="sortable">
+              {{ header }}
+              <span v-if="sortKey === header">{{ sortOrders[header] > 0 ? '▲' : '▼' }}</span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(row, index) in sortedRows"
+            :key="row.id"
+            :class="{ selected: index === selectedIndex }"
+            @click="selectRow(index)"
+          >
+            <td>{{ row.Name }}</td>
+            <td>{{ row.Amount }}</td>
+            <td>{{ row.PaymentType }}</td>
+            <td>{{ formatDate(row.Date) }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <!-- Modal -->
+    <!-- Add/Edit Modal -->
     <div v-if="showModal" class="modal-overlay" @click.self="closeModal">
       <div class="modal">
         <h3>{{ modalType === 'add' ? 'Add New Entry' : 'Edit Entry' }}</h3>
@@ -66,19 +68,19 @@
         </form>
       </div>
     </div>
-  </div>
 
-  <!-- Delete Confirmation Modal -->
-  <div v-if="showDeleteModal" class="modal-overlay" @click.self="cancelDelete">
-    <div class="modal">
-      <h3>Delete Row</h3>
-      <p>
-        Are you sure you want to delete "<strong>{{ selectedRow.Name }}</strong
-        >"?
-      </p>
-      <div class="modal-actions">
-        <button @click="confirmDelete">Yes, Delete</button>
-        <button @click="cancelDelete">Cancel</button>
+    <!-- Delete Confirmation Modal -->
+    <div v-if="showDeleteModal" class="modal-overlay" @click.self="cancelDelete">
+      <div class="modal">
+        <h3>Delete Row</h3>
+        <p>
+          Are you sure you want to delete "<strong>{{ selectedRow.Name }}</strong
+          >"?
+        </p>
+        <div class="modal-actions">
+          <button @click="confirmDelete">Yes, Delete</button>
+          <button @click="cancelDelete">Cancel</button>
+        </div>
       </div>
     </div>
   </div>
@@ -98,11 +100,11 @@ export default {
       rows: [],
       selectedIndex: null,
       showModal: false,
+      showDeleteModal: false,
       modalType: 'add',
       tempRow: { Name: '', Amount: null, PaymentType: '', Date: '' },
       sortKey: null,
       sortOrders: {},
-      showDeleteModal: false,
     }
   },
   computed: {
@@ -111,7 +113,6 @@ export default {
     },
     sortedRows() {
       if (!this.sortKey) return this.rows
-
       const keyMap = {
         Name: 'Name',
         Amount: 'Amount',
@@ -119,15 +120,13 @@ export default {
         Date: 'Date',
       }
       const key = keyMap[this.sortKey]
-
       return [...this.rows].sort((a, b) => {
         const order = this.sortOrders[this.sortKey]
         const aVal = a[key]
         const bVal = b[key]
 
-        if (typeof aVal === 'number' && typeof bVal === 'number') return (aVal - bVal) * order
+        if (typeof aVal === 'number') return (aVal - bVal) * order
         if (key === 'Date') return (new Date(aVal) - new Date(bVal)) * order
-
         return aVal.toString().localeCompare(bVal.toString()) * order
       })
     },
@@ -135,21 +134,17 @@ export default {
   created() {
     this.headers.forEach((header) => (this.sortOrders[header] = 1))
     this.fetchRows()
-
-    // Optional: Poll backend every 5 seconds for "real-time" updates
-    this.polling = setInterval(this.fetchRows, 5000)
+    this.polling = setInterval(this.fetchRows, 2000) // near real-time updates
   },
   beforeUnmount() {
     clearInterval(this.polling)
   },
   methods: {
-    async fetchRows() {
-      try {
-        const res = await axios.get(`${apiUrl}/payments`)
-        this.rows = res.data
-      } catch (err) {
-        console.error('Failed to fetch rows:', err)
-      }
+    fetchRows() {
+      axios
+        .get(`${apiUrl}/payments`)
+        .then((res) => (this.rows = res.data))
+        .catch((err) => console.error(err))
     },
     selectRow(index) {
       this.selectedIndex = this.selectedIndex === index ? null : index
@@ -169,41 +164,32 @@ export default {
     closeModal() {
       this.showModal = false
     },
-    async addRow() {
-      if (this.tempRow.Amount <= 0) {
-        alert('Amount must be positive!')
-        return
-      }
-      try {
-        const res = await axios.post(`${apiUrl}/payments`, this.tempRow)
-        this.rows.push(res.data)
-        this.closeModal()
-      } catch (err) {
-        console.error('Failed to add row:', err)
-      }
+    addRow() {
+      if (this.tempRow.Amount <= 0) return alert('Amount must be positive!')
+      axios
+        .post(`${apiUrl}/payments`, this.tempRow)
+        .then((res) => {
+          this.rows.push(res.data)
+          this.closeModal()
+        })
+        .catch((err) => console.error(err))
     },
-    async updateRow() {
+    updateRow() {
       if (!this.selectedRow) return
-      if (this.tempRow.Amount <= 0) {
-        alert('Amount must be positive!')
-        return
-      }
-      try {
-        const res = await axios.put(`${apiUrl}/payments/${this.selectedRow.id}`, this.tempRow)
-        this.rows.splice(this.selectedIndex, 1, res.data)
-        this.closeModal()
-      } catch (err) {
-        console.error('Failed to update row:', err)
-      }
+      if (this.tempRow.Amount <= 0) return alert('Amount must be positive!')
+      axios
+        .put(`${apiUrl}/payments/${this.selectedRow.id}`, this.tempRow)
+        .then((res) => {
+          this.rows.splice(this.selectedIndex, 1, res.data)
+          this.closeModal()
+        })
+        .catch((err) => console.error(err))
     },
     openDeleteModal() {
       if (!this.selectedRow) return
       this.showDeleteModal = true
     },
-
     confirmDelete() {
-      if (!this.selectedRow) return
-
       axios
         .delete(`${apiUrl}/payments/${this.selectedRow.id}`)
         .then(() => {
@@ -212,11 +198,10 @@ export default {
           this.showDeleteModal = false
         })
         .catch((err) => {
-          console.error('Failed to delete row:', err)
+          console.error(err)
           this.showDeleteModal = false
         })
     },
-
     cancelDelete() {
       this.showDeleteModal = false
     },
@@ -241,7 +226,7 @@ export default {
   margin: 20px;
 }
 
-/* Right-side icon buttons */
+/* Action buttons */
 .actions-right {
   display: flex;
   justify-content: flex-end;
@@ -276,20 +261,21 @@ export default {
   height: 24px;
 }
 
-/* Table Styling */
+/* Table wrapper for horizontal scroll */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   background-color: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
-  overflow: hidden;
-}
-
-thead {
-  background-color: #3498db;
-  color: white;
 }
 
 th,
@@ -297,6 +283,10 @@ td {
   padding: 12px 15px;
   border-bottom: 1px solid #ddd;
   text-align: left;
+}
+
+th.sortable:hover {
+  background-color: #2980b9;
 }
 
 th.sortable {
@@ -313,7 +303,7 @@ tr.selected {
   font-weight: bold;
 }
 
-/* Modal Styling */
+/* Modals */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -324,13 +314,15 @@ tr.selected {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal {
   background: white;
   padding: 20px;
   border-radius: 8px;
-  min-width: 300px;
+  width: 90%;
+  max-width: 400px;
 }
 
 .modal input,
@@ -341,6 +333,7 @@ tr.selected {
   padding: 8px;
   border-radius: 4px;
   border: 1px solid #ccc;
+  box-sizing: border-box;
 }
 
 .modal-actions {
@@ -361,5 +354,51 @@ tr.selected {
 
 .modal-actions button:hover {
   background-color: #2980b9;
+}
+
+thead {
+  background-color: #3498db; /* same as sidebar theme */
+}
+
+th {
+  color: white;
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+th span {
+  margin-left: 6px;
+  font-size: 10px;
+}
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .actions-right {
+    gap: 10px;
+  }
+  .actions-right .icon {
+    width: 20px;
+    height: 20px;
+  }
+  th,
+  td {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 500px) {
+  .modal {
+    padding: 15px;
+  }
+  th,
+  td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+  }
 }
 </style>

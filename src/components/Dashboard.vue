@@ -5,15 +5,15 @@
     <div class="summary-boxes">
       <div class="box electric">
         <h3>Electric</h3>
-        <p>{{ totals.Electric | currency }}</p>
+        <p>{{ formatCurrency(totals.Electric) }}</p>
       </div>
       <div class="box water">
         <h3>Water</h3>
-        <p>{{ totals.Water | currency }}</p>
+        <p>{{ formatCurrency(totals.Water) }}</p>
       </div>
       <div class="box misc">
         <h3>Miscellaneous</h3>
-        <p>{{ totals.Miscellaneous | currency }}</p>
+        <p>{{ formatCurrency(totals.Miscellaneous) }}</p>
       </div>
     </div>
   </div>
@@ -63,10 +63,8 @@ export default {
         else if (row.PaymentType === 'Miscellaneous') this.totals.Miscellaneous += row.Amount
       })
     },
-  },
-  filters: {
-    currency(value) {
-      return '$' + Number(value).toLocaleString()
+    formatCurrency(value) {
+      return '₱' + Number(value || 0).toLocaleString()
     },
   },
 }

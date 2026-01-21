@@ -1,11 +1,13 @@
 <template>
   <div class="app-container">
     <!-- Sidebar -->
-    <button class="burger" @click="toggleSidebar">☰</button>
+    <button v-if="!isOpen" class="burger" @click="toggleSidebar">☰</button>
+
+    <!-- Overlay (only visible when sidebar is open) -->
+    <div v-if="isOpen" class="overlay" @click="isOpen = false"></div>
 
     <aside class="sidebar" :class="{ open: isOpen }">
       <h2 class="sidebar-title">Menu</h2>
-      <button class="toggle-btn" @click="isCollapsed = !isCollapsed">☰</button>
       <ul class="menu">
         <li
           v-for="(option, index) in options"
@@ -134,6 +136,16 @@ export default {
 @media (max-width: 768px) {
   .burger {
     display: block;
+  }
+
+  .overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 999; /* behind sidebar but above content */
   }
 
   .sidebar {

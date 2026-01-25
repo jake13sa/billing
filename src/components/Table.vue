@@ -1,6 +1,6 @@
 <template>
   <div class="table-container" @click.self="deselectRow">
-    <h2>Payments Table</h2>
+    <h2>Payment History</h2>
 
     <!-- Action Buttons -->
     <div class="actions-right">

@@ -87,12 +87,10 @@
 </template>
 
 <script>
-import axios from 'axios'
-
-const apiUrl = import.meta.env.VITE_API_URL
+import { api } from '../api'
 
 export default {
-  name: 'Table',
+  name: 'PaymentTable',
   data() {
     return {
       headers: ['Name', 'Amount', 'Payment Type', 'Date'],
@@ -141,8 +139,8 @@ export default {
   },
   methods: {
     fetchRows() {
-      axios
-        .get(`${apiUrl}/payments`)
+      api
+        .get('/payments')
         .then((res) => (this.rows = res.data))
         .catch((err) => console.error(err))
     },
@@ -166,8 +164,8 @@ export default {
     },
     addRow() {
       if (this.tempRow.Amount <= 0) return alert('Amount must be positive!')
-      axios
-        .post(`${apiUrl}/payments`, this.tempRow)
+      api
+        .post('/payments', this.tempRow)
         .then((res) => {
           this.rows.push(res.data)
           this.closeModal()
@@ -177,8 +175,8 @@ export default {
     updateRow() {
       if (!this.selectedRow) return
       if (this.tempRow.Amount <= 0) return alert('Amount must be positive!')
-      axios
-        .put(`${apiUrl}/payments/${this.selectedRow.id}`, this.tempRow)
+      api
+        .put(`/payments/${this.selectedRow.id}`, this.tempRow)
         .then((res) => {
           this.rows.splice(this.selectedIndex, 1, res.data)
           this.closeModal()
@@ -190,8 +188,8 @@ export default {
       this.showDeleteModal = true
     },
     confirmDelete() {
-      axios
-        .delete(`${apiUrl}/payments/${this.selectedRow.id}`)
+      api
+        .delete(`/payments/${this.selectedRow.id}`)
         .then(() => {
           this.rows.splice(this.selectedIndex, 1)
           this.selectedIndex = null

@@ -18,6 +18,7 @@
           {{ option }}
         </li>
       </ul>
+      <button v-if="showLogout" class="sign-out" @click="$emit('logout')">Sign out</button>
     </aside>
 
     <!-- Main Content -->
@@ -29,29 +30,36 @@
 
 <script>
 // Import the components
-import Table from './Table.vue'
-import Dashboard from './Dashboard.vue'
+import PaymentTable from './Table.vue'
+import PaymentDashboard from './Dashboard.vue'
 
 export default {
   name: 'SidebarMenu',
   components: {
-    Table,
-    Dashboard,
+    PaymentTable,
+    PaymentDashboard,
   },
   data() {
     return {
-      options: ['Dashboard', 'Table', 'Settings', 'Messages', 'Logout'],
+      options: ['Dashboard', 'Table', 'Settings', 'Messages'],
       selected: 'Dashboard', // default selection
       isOpen: false,
     }
   },
+  props: {
+    showLogout: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  emits: ['logout'],
   computed: {
     currentComponent() {
       switch (this.selected) {
         case 'Dashboard':
-          return 'Dashboard'
+          return 'PaymentDashboard'
         case 'Table':
-          return 'Table'
+          return 'PaymentTable'
         default:
           // Placeholder for other options
           return {
@@ -84,6 +92,8 @@ export default {
   width: 200px;
   background-color: #3498db;
   color: white;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar-title {
@@ -110,6 +120,16 @@ export default {
 
 .menu li.active {
   background-color: #1f618d;
+}
+
+.sign-out {
+  background: transparent;
+  border: 0;
+  color: inherit;
+  cursor: pointer;
+  margin: auto 10px 12px;
+  padding: 10px;
+  text-align: left;
 }
 
 /* Main Content */

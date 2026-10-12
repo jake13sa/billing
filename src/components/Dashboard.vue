@@ -20,11 +20,10 @@
 </template>
 
 <script>
-import axios from 'axios'
-const apiUrl = import.meta.env.VITE_API_URL
+import { api } from '../api'
 
 export default {
-  name: 'Dashboard',
+  name: 'PaymentDashboard',
   data() {
     return {
       rows: [],
@@ -46,7 +45,7 @@ export default {
   methods: {
     async fetchRows() {
       try {
-        const res = await axios.get(`${apiUrl}/payments`)
+        const res = await api.get('/payments')
         this.rows = res.data
         this.calculateTotals()
       } catch (err) {

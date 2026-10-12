@@ -27,6 +27,20 @@
       "Amount": 500,
       "PaymentType": "Water",
       "Date": "2026-01-28"
+    },
+    {
+      "id": "24c7",
+      "Name": "Test",
+      "Amount": 123,
+      "PaymentType": "Miscellaneous",
+      "Date": "2026-10-13"
+    },
+    {
+      "id": "3fa3",
+      "Name": "AAA",
+      "Amount": 2123,
+      "PaymentType": "Electric",
+      "Date": "2026-10-06"
     }
   ]
 }

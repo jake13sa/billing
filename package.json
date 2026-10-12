@@ -10,6 +10,9 @@
     "serve": "vite",
     "backend": "nodemon --watch db.json --exec \"json-server --watch db.json --port 3000 --host 0.0.0.0\"",
     "dev": "concurrently \"npm run serve\" \"npm run backend\"",
+    "api": "node api/server.js",
+    "start": "node api/server.js",
+    "db:import-json": "node api/import-json.js",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --fix --cache",
@@ -17,6 +20,10 @@
   },
   "dependencies": {
     "axios": "^1.13.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "pg": "^8.16.3",
     "vue": "^3.5.26"
   },
   "devDependencies": {
